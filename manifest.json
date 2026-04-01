@@ -1,11 +1,12 @@
 {
-  "name": "Pocket Corridor Table (sd/df)",
-  "short_name": "PCPT",
+  "name": "Operational Gap Companion",
+  "short_name": "OGC",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0b0f14",
   "theme_color": "#0b0f14",
+  "description": "A lightweight diagnostic companion for operational-gap analysis in inorganic electronic-state assignment.",
   "icons": [
     {
       "src": "icon-192.png",
