@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pocket Corridor Table (sd/df)</title>
+  <title>Operational Gap Companion</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0b0f14" />
   <link rel="icon" href="icon-192.png">
@@ -11,13 +11,13 @@
 </head>
 <body>
   <header>
-    <h1>Pocket Corridor Table (sd/df)</h1>
-    <p class="sub">PCPT + corridor calculator (Δ, V, Δop → R, sin²φ, CRS)</p>
+    <h1>Operational Gap Companion</h1>
+    <p class="sub">Pocket Corridor Table + 2×2 diagnostic calculator for inorganic electronic-state assignment</p>
   </header>
 
   <main>
     <section class="card">
-      <h2>1) 2×2 calculator (from the paper)</h2>
+      <h2>1) 2×2 diagnostic calculator</h2>
       <div class="grid">
         <label>Δ (eV)
           <input id="delta" type="number" step="0.001" value="1.0">
@@ -35,18 +35,19 @@
       <button id="calc">Calculate</button>
       <div class="out" id="out"></div>
       <details class="small">
-        <summary>Formulae (for audit)</summary>
+        <summary>Formulae (audit view)</summary>
         <pre>R = |Δ|/|V|
 sin²φ = 1/2 * (1 - Δ/sqrt(Δ² + 4V²))
-Δmix = sqrt(Δ² + 4V²)
+Δadiab = sqrt(Δ² + 4V²)
+Δmin = 2|V|
 kBT (eV) = 8.617333262e-5 * T
-CRS heuristic (editable): CRS=0 if Δop≥0.5 and R≥5; CRS=1 if Δop≥0.2 and R≥2; CRS=2 if Δop≥0.1 and R≥1; otherwise CRS=3</pre>
+CRS thresholds: CRS=0 if Δop≥0.5 and R≥5; CRS=1 if Δop≥0.2 and R≥2; CRS=2 if Δop≥0.1 and R≥1; otherwise CRS=3</pre>
       </details>
     </section>
 
     <section class="card">
       <h2>2) PCPT by element (CSV)</h2>
-      <p class="small">File: <code>data/pcpt.csv</code> (symbol, CRS, DMC, note). The table below reads this CSV.</p>
+      <p class="small">File: <code>data/pcpt.csv</code> with fields <code>symbol, CRS, DMC, note</code>.</p>
       <div class="toolbar">
         <input id="filter" placeholder="Filter by symbol (e.g. Fe) or DMC (e.g. SOC)" />
         <button id="reload">Reload CSV</button>
@@ -55,14 +56,14 @@ CRS heuristic (editable): CRS=0 if Δop≥0.5 and R≥5; CRS=1 if Δop≥0.2 and
     </section>
 
     <section class="card">
-      <h2>3) Cases dataset (syntheses/complexes) — optional</h2>
-      <p class="small">File: <code>data/cases.csv</code> with (Δ, V, Δop, θ, observable) for attaching real cases and generating reports.</p>
+      <h2>3) Cases dataset (optional)</h2>
+      <p class="small">File: <code>data/cases.csv</code> with fields <code>Δ, V, Δop, θ, observable</code> for case inspection and quick reporting.</p>
       <div id="casesTable"></div>
     </section>
   </main>
 
   <footer class="small">
-    <p>Offline: this site registers a Service Worker when served over HTTPS (Netlify/GitHub Pages). If opened as a local file (file://), the PWA cannot be installed.</p>
+    <p>Offline support: this site registers a Service Worker when served over HTTPS. If opened as a local file (file://), install and offline behaviour will not work properly.</p>
   </footer>
 
   <script src="app.js"></script>
