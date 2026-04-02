@@ -4,11 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Operational Gap Companion</title>
-  <meta name="description" content="A lightweight diagnostic companion for operational-gap analysis in inorganic electronic-state assignment." />
+
+  <meta
+    name="description"
+    content="A lightweight diagnostic companion for operational-gap analysis in inorganic electronic-state assignment."
+  />
   <meta name="theme-color" content="#0b0f14" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+  />
+
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Operational Gap Companion" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -103,7 +119,7 @@ CRS = 3 otherwise
             Corridor-sensitive assignment; click to expand the inorganic reading.
           </span>
         </summary>
-        <div id="quickExpanded" class="selected-note" style="margin-top:10px;">
+        <div id="quickExpanded" class="selected-note">
           The full chemical interpretation will appear here after the diagnostic is updated.
         </div>
       </details>
