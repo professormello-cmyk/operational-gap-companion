@@ -80,7 +80,7 @@ function updateSelectedPanel(element){
 }
 
 function highlightSelectedCell(){
-  const cells = document.querySelectorAll(".element-cell");
+  const cells = document.querySelectorAll(".element-cell[data-symbol]");
   cells.forEach((cell) => {
     const isSelected =
       state.selectedElement &&
@@ -115,11 +115,11 @@ function inorganicConsequenceSentence(element){
     return "Small changes in ligand field, oxidation state, or coordination geometry may alter the dominant state character and affect magnetic or redox behaviour.";
   }
 
-  if (category === "lanthanide"){
+  if (category === "lanthanoid"){
     return "Changes in oxidation state, coordination environment, or spin-orbit and multiplet balance may modify the practical assignment and its spectroscopic reading.";
   }
 
-  if (category === "actinide"){
+  if (category === "actinoid"){
     return "Changes in covalency, oxidation state, or coordination environment may reorganise 5f participation and alter redox or spectroscopic behaviour.";
   }
 
@@ -242,6 +242,35 @@ function makeElementCell(element){
   return button;
 }
 
+function makeBridgeCell(row, col, rangeText, labelText){
+  const div = document.createElement("div");
+  div.className = "element-cell";
+  div.style.gridColumn = String(col);
+  div.style.gridRow = String(row);
+  div.setAttribute("aria-label", `${rangeText} ${labelText}`);
+
+  const num = document.createElement("div");
+  num.className = "element-number";
+  num.textContent = rangeText;
+
+  const sym = document.createElement("div");
+  sym.className = "element-symbol";
+  sym.textContent = "f";
+
+  const cat = document.createElement("div");
+  cat.className = "element-category";
+  cat.textContent = labelText;
+
+  div.appendChild(num);
+  div.appendChild(sym);
+  div.appendChild(cat);
+
+  div.style.cursor = "default";
+  div.style.opacity = "0.92";
+
+  return div;
+}
+
 function renderPeriodicTable(elements){
   const container = byId("periodicTable");
   container.innerHTML = "";
@@ -251,6 +280,9 @@ function renderPeriodicTable(elements){
     if (a.col !== b.col) return a.col - b.col;
     return a.Z - b.Z;
   });
+
+  container.appendChild(makeBridgeCell(6, 3, "57–71", "lanthanoids"));
+  container.appendChild(makeBridgeCell(7, 3, "89–103", "actinoids"));
 
   ordered.forEach((element) => {
     container.appendChild(makeElementCell(element));
