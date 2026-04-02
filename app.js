@@ -97,45 +97,76 @@ function applyElementPreset(element){
   byId("T").value = Number(element.T).toFixed(0);
 }
 
-function interpretResult(element, diagnostics, dop, T){
-  const { R, sin2phi } = diagnostics;
-  const kBT = kB_eV_per_K * T;
+function baseSummaryFromCRS(crs){
+  if (crs === 0) return "Robust assignment; local inorganic competition appears limited.";
+  if (crs === 1) return "Moderately stable assignment; local inorganic competition is present but not dominant.";
+  if (crs === 2) return "Corridor-sensitive assignment; chemically relevant local competition is already present.";
+  return "Fragile assignment; strong inorganic competition is likely in the current window.";
+}
+
+function inorganicConsequenceSentence(element){
+  if (!element){
+    return "Small changes in control variables may still alter the dominant state character, so the present reading should be treated as generic.";
+  }
+
+  const category = element.category || "";
+
+  if (category === "transition-metal"){
+    return "Small changes in ligand field, oxidation state, or coordination geometry may alter the dominant state character and affect magnetic or redox behaviour.";
+  }
+
+  if (category === "lanthanide"){
+    return "Changes in oxidation state, coordination environment, or spin-orbit and multiplet balance may modify the practical assignment and its spectroscopic reading.";
+  }
+
+  if (category === "actinide"){
+    return "Changes in covalency, oxidation state, or coordination environment may reorganise 5f participation and alter redox or spectroscopic behaviour.";
+  }
+
+  if (category === "post-transition-metal"){
+    return "Changes in oxidation state, bond polarity, or heavy-atom effects may shift the balance between competing descriptions and modify reactivity.";
+  }
+
+  if (category === "metalloid"){
+    return "Changes in covalency, oxidation state, or local geometry may shift the balance between competing bonding descriptions.";
+  }
+
+  if (category === "halogen"){
+    return "Changes in oxidation state, hypervalent bonding, or charge-transfer environment may shift the dominant description and its reactivity profile.";
+  }
+
+  if (category === "noble-gas"){
+    return "Only unusual bonding conditions, strong fields, or uncommon oxidation pathways would be expected to challenge the present assignment.";
+  }
+
+  if (category === "alkali-metal" || category === "alkaline-earth"){
+    return "Unusual covalency, extreme coordination changes, or strong external perturbations would be the main reasons to recheck the present assignment.";
+  }
+
+  return "Changes in bonding context, oxidation state, or local environment may still alter the dominant electronic description.";
+}
+
+function buildInterpretation(element, diagnostics, dop, T){
+  const { R } = diagnostics;
   const crs = classifyCRS(dop, R);
 
-  let sentence1 = "";
-  if (crs === 0){
-    sentence1 = "The current parameter window is consistent with a comparatively robust electronic-state assignment.";
-  } else if (crs === 1){
-    sentence1 = "The current parameter window suggests moderate assignment stability, but local competition should still be monitored.";
-  } else if (crs === 2){
-    sentence1 = "The system lies near a chemically relevant near-degeneracy corridor, so the assignment should be treated as control-sensitive.";
-  } else {
-    sentence1 = "Strong local competition is expected, and a rigid single-label assignment is not recommended in the present parameter window.";
-  }
+  const summary = `${baseSummaryFromCRS(crs)} Click to expand the inorganic reading.`;
 
-  let sentence2 = "";
-  if (!Number.isFinite(sin2phi)){
-    sentence2 = "The current input does not define a regular two-state mixing estimate.";
-  } else if (sin2phi < 0.10){
-    sentence2 = "Two-state leakage remains limited in this simplified 2×2 picture.";
-  } else if (sin2phi < 0.30){
-    sentence2 = "Mixing is already noticeable and should not be ignored in chemical interpretation.";
-  } else {
-    sentence2 = "Mixing is substantial, indicating that the competing descriptions are no longer cleanly separable.";
-  }
+  const competitionSentence = element
+    ? `In inorganic terms, the dominant competition is associated with ${String(element.DMC).toLowerCase()}.`
+    : "In inorganic terms, the dominant competition is treated here as a generic two-state electronic competition.";
 
-  let sentence3 = "";
-  if (Number.isFinite(kBT) && dop <= 2 * kBT){
-    sentence3 = "At the chosen temperature, the operational gap is thermally soft enough to deserve caution.";
-  } else {
-    sentence3 = "At the chosen temperature, thermal smearing alone is unlikely to dominate the operational gap.";
-  }
+  const consequenceSentence = inorganicConsequenceSentence(element);
 
-  const elementSentence = element
-    ? `For ${element.name}, the current preset is framed around ${element.DMC}; ${element.hint}`
-    : "No element-specific preset is currently selected, so the interpretation is purely generic.";
+  const expanded = `${competitionSentence} ${consequenceSentence}`;
 
-  return `${sentence1} ${sentence2} ${sentence3} ${elementSentence}`;
+  return { summary, expanded };
+}
+
+function updateInterpretation(element, diagnostics, dop, T){
+  const payload = buildInterpretation(element, diagnostics, dop, T);
+  byId("quickSummary").textContent = payload.summary;
+  byId("quickExpanded").textContent = payload.expanded;
 }
 
 function renderOut(){
@@ -158,8 +189,7 @@ function renderOut(){
     </div>
   `;
 
-  byId("quickInterpretation").textContent =
-    interpretResult(state.selectedElement, diagnostics, dop, T);
+  updateInterpretation(state.selectedElement, diagnostics, dop, T);
 }
 
 function selectElement(element){
@@ -172,19 +202,14 @@ function selectElement(element){
 
 function resetToSelectedElementPreset(){
   if (!state.selectedElement){
-    byId("quickInterpretation").textContent =
+    byId("quickSummary").textContent =
       "No element is currently selected. Click one element in the periodic table first.";
+    byId("quickExpanded").textContent =
+      "A full inorganic interpretation requires a selected preset element.";
     return;
   }
   applyElementPreset(state.selectedElement);
   renderOut();
-}
-
-function makeEmptyCell(){
-  const div = document.createElement("div");
-  div.className = "empty-cell";
-  div.setAttribute("aria-hidden", "true");
-  return div;
 }
 
 function makeElementCell(element){
@@ -192,6 +217,8 @@ function makeElementCell(element){
   button.type = "button";
   button.className = "element-cell";
   button.dataset.symbol = element.symbol;
+  button.style.gridColumn = String(element.col);
+  button.style.gridRow = String(element.row);
   button.setAttribute(
     "aria-label",
     `${element.name}, atomic number ${element.Z}`
@@ -219,21 +246,15 @@ function renderPeriodicTable(elements){
   const container = byId("periodicTable");
   container.innerHTML = "";
 
-  const maxRow = Math.max(...elements.map((el) => el.row));
-  const maxCol = 18;
-
-  const posMap = new Map();
-  elements.forEach((el) => {
-    posMap.set(`${el.row}-${el.col}`, el);
+  const ordered = [...elements].sort((a, b) => {
+    if (a.row !== b.row) return a.row - b.row;
+    if (a.col !== b.col) return a.col - b.col;
+    return a.Z - b.Z;
   });
 
-  for (let row = 1; row <= maxRow; row += 1){
-    for (let col = 1; col <= maxCol; col += 1){
-      const key = `${row}-${col}`;
-      const element = posMap.get(key);
-      container.appendChild(element ? makeElementCell(element) : makeEmptyCell());
-    }
-  }
+  ordered.forEach((element) => {
+    container.appendChild(makeElementCell(element));
+  });
 }
 
 async function loadElements(){
@@ -286,7 +307,8 @@ async function init(){
     byId("selectedName").textContent = "Dataset loading failed";
     byId("selectedMeta").textContent = "The periodic table dataset could not be loaded.";
     byId("selectedNote").textContent = String(err.message || err);
-    byId("quickInterpretation").textContent =
+    byId("quickSummary").textContent = "Dataset loading failed.";
+    byId("quickExpanded").textContent =
       "The app could not load the element presets. Check data/elements.json and try again.";
     byId("out").innerHTML =
       `<span class="tag tag-risk">Dataset error</span>`;
