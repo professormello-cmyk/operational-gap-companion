@@ -1,12 +1,12 @@
-const CACHE_NAME = "ogc-v3";
+const CACHE_NAME = "ogc-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
-  "./manifest.json",
-  "./icon-192.png",
-  "./icon-512.png",
+  "./manifest.json?v=3",
+  "./icon-192.png?v=3",
+  "./icon-512.png?v=3",
   "./data/elements.json"
 ];
 
