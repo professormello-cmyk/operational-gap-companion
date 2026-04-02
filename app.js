@@ -1,29 +1,29 @@
-const kB_eV_per_K = 8.617333262e-5;
+const K_B_EV_PER_K = 8.617333262e-5;
 
 const state = {
   elements: [],
   selectedElement: null
 };
 
-function byId(id){
+function byId(id) {
   return document.getElementById(id);
 }
 
-function absVal(x){
+function absVal(x) {
   return Math.abs(x);
 }
 
-function fmt(x, digits = 4){
+function fmt(x, digits = 4) {
   if (!Number.isFinite(x)) return "NaN";
   return Number(x).toFixed(digits);
 }
 
-function categoryLabel(category){
+function categoryLabel(category) {
   if (!category) return "unspecified";
   return String(category).replace(/-/g, " ");
 }
 
-function calc2x2(delta, V){
+function calc2x2(delta, V) {
   const denom = Math.sqrt(delta * delta + 4 * V * V);
   const R = absVal(V) > 0 ? absVal(delta) / absVal(V) : (absVal(delta) > 0 ? Infinity : NaN);
   const sin2phi = denom > 0 ? 0.5 * (1 - delta / denom) : NaN;
@@ -32,28 +32,28 @@ function calc2x2(delta, V){
   return { R, sin2phi, DeltaAdiab, DeltaMin };
 }
 
-function classifyCRS(dop, R){
+function classifyCRS(dop, R) {
   if (dop >= 0.5 && R >= 5) return 0;
   if (dop >= 0.2 && R >= 2) return 1;
   if (dop >= 0.1 && R >= 1) return 2;
   return 3;
 }
 
-function crsText(crs){
+function crsText(crs) {
   if (crs === 0) return "Open-gap robust";
   if (crs === 1) return "Moderately stable";
   if (crs === 2) return "Corridor-sensitive";
   return "Fragile / strong competition";
 }
 
-function crsTagClass(crs){
+function crsTagClass(crs) {
   if (crs === 0) return "tag tag-ok";
   if (crs === 1) return "tag tag-ok";
   if (crs === 2) return "tag tag-mid";
   return "tag tag-risk";
 }
 
-function readInputs(){
+function readInputs() {
   return {
     delta: Number(byId("delta").value),
     V: Number(byId("V").value),
@@ -62,8 +62,8 @@ function readInputs(){
   };
 }
 
-function updateSelectedPanel(element){
-  if (!element){
+function updateSelectedPanel(element) {
+  if (!element) {
     byId("selectedSymbol").textContent = "—";
     byId("selectedName").textContent = "No element selected";
     byId("selectedMeta").textContent = "Click one element in the periodic table.";
@@ -79,7 +79,7 @@ function updateSelectedPanel(element){
     `${element.note} ${element.hint}`;
 }
 
-function highlightSelectedCell(){
+function highlightSelectedCell() {
   const cells = document.querySelectorAll(".element-cell[data-symbol]");
   cells.forEach((cell) => {
     const isSelected =
@@ -89,7 +89,7 @@ function highlightSelectedCell(){
   });
 }
 
-function applyElementPreset(element){
+function applyElementPreset(element) {
   if (!element) return;
   byId("delta").value = Number(element.delta).toFixed(3);
   byId("V").value = Number(element.V).toFixed(3);
@@ -97,56 +97,56 @@ function applyElementPreset(element){
   byId("T").value = Number(element.T).toFixed(0);
 }
 
-function baseSummaryFromCRS(crs){
+function baseSummaryFromCRS(crs) {
   if (crs === 0) return "Robust assignment; local inorganic competition appears limited.";
   if (crs === 1) return "Moderately stable assignment; local inorganic competition is present but not dominant.";
   if (crs === 2) return "Corridor-sensitive assignment; chemically relevant local competition is already present.";
   return "Fragile assignment; strong inorganic competition is likely in the current window.";
 }
 
-function inorganicConsequenceSentence(element){
-  if (!element){
+function inorganicConsequenceSentence(element) {
+  if (!element) {
     return "Small changes in control variables may still alter the dominant state character, so the present reading should be treated as generic.";
   }
 
   const category = element.category || "";
 
-  if (category === "transition-metal"){
+  if (category === "transition-metal") {
     return "Small changes in ligand field, oxidation state, or coordination geometry may alter the dominant state character and affect magnetic or redox behaviour.";
   }
 
-  if (category === "lanthanoid"){
+  if (category === "lanthanoid") {
     return "Changes in oxidation state, coordination environment, or spin-orbit and multiplet balance may modify the practical assignment and its spectroscopic reading.";
   }
 
-  if (category === "actinoid"){
+  if (category === "actinoid") {
     return "Changes in covalency, oxidation state, or coordination environment may reorganise 5f participation and alter redox or spectroscopic behaviour.";
   }
 
-  if (category === "post-transition-metal"){
+  if (category === "post-transition-metal") {
     return "Changes in oxidation state, bond polarity, or heavy-atom effects may shift the balance between competing descriptions and modify reactivity.";
   }
 
-  if (category === "metalloid"){
+  if (category === "metalloid") {
     return "Changes in covalency, oxidation state, or local geometry may shift the balance between competing bonding descriptions.";
   }
 
-  if (category === "halogen"){
+  if (category === "halogen") {
     return "Changes in oxidation state, hypervalent bonding, or charge-transfer environment may shift the dominant description and its reactivity profile.";
   }
 
-  if (category === "noble-gas"){
+  if (category === "noble-gas") {
     return "Only unusual bonding conditions, strong fields, or uncommon oxidation pathways would be expected to challenge the present assignment.";
   }
 
-  if (category === "alkali-metal" || category === "alkaline-earth"){
+  if (category === "alkali-metal" || category === "alkaline-earth") {
     return "Unusual covalency, extreme coordination changes, or strong external perturbations would be the main reasons to recheck the present assignment.";
   }
 
   return "Changes in bonding context, oxidation state, or local environment may still alter the dominant electronic description.";
 }
 
-function buildInterpretation(element, diagnostics, dop, T){
+function buildInterpretation(element, diagnostics, dop, T) {
   const { R } = diagnostics;
   const crs = classifyCRS(dop, R);
 
@@ -163,36 +163,61 @@ function buildInterpretation(element, diagnostics, dop, T){
   return { summary, expanded };
 }
 
-function updateInterpretation(element, diagnostics, dop, T){
+function updateInterpretation(element, diagnostics, dop, T) {
   const payload = buildInterpretation(element, diagnostics, dop, T);
   byId("quickSummary").textContent = payload.summary;
   byId("quickExpanded").textContent = payload.expanded;
 }
 
-function renderOut(){
+function makeSpan(className, htmlLabel, valueText) {
+  const span = document.createElement("span");
+  span.className = className;
+
+  const strong = document.createElement("strong");
+  strong.textContent = htmlLabel;
+
+  span.appendChild(strong);
+  span.appendChild(document.createTextNode(` = ${valueText}`));
+
+  return span;
+}
+
+function makeTagSpan(className, text) {
+  const span = document.createElement("span");
+  span.className = className;
+  span.textContent = text;
+  return span;
+}
+
+function renderOut() {
   const { delta, V, dop, T } = readInputs();
   const diagnostics = calc2x2(delta, V);
-  const kBT = kB_eV_per_K * T;
+  const kBT = K_B_EV_PER_K * T;
   const crs = classifyCRS(dop, diagnostics.R);
 
-  byId("out").innerHTML = `
-    <div class="metrics-row">
-      <span class="${crsTagClass(crs)}">CRS ${crs} · ${crsText(crs)}</span>
-      <span class="metric"><strong>R</strong> = ${fmt(diagnostics.R)}</span>
-      <span class="metric"><strong>sin²φ</strong> = ${fmt(diagnostics.sin2phi)}</span>
-    </div>
-    <div class="metrics-row">
-      <span class="metric"><strong>Δadiab</strong> = ${fmt(diagnostics.DeltaAdiab)} eV</span>
-      <span class="metric"><strong>Δmin</strong> = ${fmt(diagnostics.DeltaMin)} eV</span>
-      <span class="metric"><strong>Δop</strong> = ${fmt(dop)} eV</span>
-      <span class="metric"><strong>kBT</strong> = ${fmt(kBT)} eV</span>
-    </div>
-  `;
+  const out = byId("out");
+  out.replaceChildren();
+
+  const row1 = document.createElement("div");
+  row1.className = "metrics-row";
+  row1.appendChild(makeTagSpan(crsTagClass(crs), `CRS ${crs} · ${crsText(crs)}`));
+  row1.appendChild(makeSpan("metric", "R", fmt(diagnostics.R)));
+  row1.appendChild(makeSpan("metric", "sin²φ", fmt(diagnostics.sin2phi)));
+
+  const row2 = document.createElement("div");
+  row2.className = "metrics-row";
+  row2.appendChild(makeSpan("metric", "Δadiab", `${fmt(diagnostics.DeltaAdiab)} eV`));
+  row2.appendChild(makeSpan("metric", "Δmin", `${fmt(diagnostics.DeltaMin)} eV`));
+  row2.appendChild(makeSpan("metric", "Δop", `${fmt(dop)} eV`));
+  row2.appendChild(makeSpan("metric", "kBT", `${fmt(kBT)} eV`));
+
+  out.appendChild(row1);
+  out.appendChild(row2);
 
   updateInterpretation(state.selectedElement, diagnostics, dop, T);
 }
 
-function selectElement(element){
+function selectElement(element) {
   state.selectedElement = element;
   updateSelectedPanel(element);
   highlightSelectedCell();
@@ -200,8 +225,8 @@ function selectElement(element){
   renderOut();
 }
 
-function resetToSelectedElementPreset(){
-  if (!state.selectedElement){
+function resetToSelectedElementPreset() {
+  if (!state.selectedElement) {
     byId("quickSummary").textContent =
       "No element is currently selected. Click one element in the periodic table first.";
     byId("quickExpanded").textContent =
@@ -212,7 +237,7 @@ function resetToSelectedElementPreset(){
   renderOut();
 }
 
-function makeElementCell(element){
+function makeElementCell(element) {
   const button = document.createElement("button");
   button.type = "button";
   button.className = "element-cell";
@@ -242,7 +267,7 @@ function makeElementCell(element){
   return button;
 }
 
-function makeBridgeCell(row, col, rangeText, labelText){
+function makeBridgeCell(row, col, rangeText, labelText) {
   const div = document.createElement("div");
   div.className = "element-cell";
   div.style.gridColumn = String(col);
@@ -271,9 +296,9 @@ function makeBridgeCell(row, col, rangeText, labelText){
   return div;
 }
 
-function renderPeriodicTable(elements){
+function renderPeriodicTable(elements) {
   const container = byId("periodicTable");
-  container.innerHTML = "";
+  container.replaceChildren();
 
   const ordered = [...elements].sort((a, b) => {
     if (a.row !== b.row) return a.row - b.row;
@@ -289,37 +314,52 @@ function renderPeriodicTable(elements){
   });
 }
 
-async function loadElements(){
-  const response = await fetch("data/elements.json", { cache: "no-cache" });
-  if (!response.ok){
+async function loadElements() {
+  const response = await fetch("data/elements.json");
+  if (!response.ok) {
     throw new Error(`Failed to load elements.json (${response.status})`);
   }
+
   const data = await response.json();
-  if (!data.elements || !Array.isArray(data.elements)){
+  if (!data.elements || !Array.isArray(data.elements)) {
     throw new Error("Invalid elements.json format");
   }
+
   return data.elements;
 }
 
-function registerServiceWorker(){
+function registerServiceWorker() {
   const isSecureContextLike =
     location.protocol === "https:" || location.hostname === "localhost";
 
-  if ("serviceWorker" in navigator && isSecureContextLike){
+  if ("serviceWorker" in navigator && isSecureContextLike) {
     window.addEventListener("load", () => {
       navigator.serviceWorker
-        .register("./sw.js")
+        .register("./sw.js", { scope: "./" })
         .catch((err) => console.warn("Service Worker registration failed:", err));
     });
   }
 }
 
-function bindUI(){
+function bindUI() {
   byId("calc").addEventListener("click", renderOut);
   byId("resetPreset").addEventListener("click", resetToSelectedElementPreset);
 }
 
-async function init(){
+function renderDatasetError(err) {
+  byId("selectedName").textContent = "Dataset loading failed";
+  byId("selectedMeta").textContent = "The periodic table dataset could not be loaded.";
+  byId("selectedNote").textContent = String(err.message || err);
+  byId("quickSummary").textContent = "Dataset loading failed.";
+  byId("quickExpanded").textContent =
+    "The app could not load the element presets. Check data/elements.json and try again.";
+
+  const out = byId("out");
+  out.replaceChildren();
+  out.appendChild(makeTagSpan("tag tag-risk", "Dataset error"));
+}
+
+async function init() {
   bindUI();
   registerServiceWorker();
   updateSelectedPanel(null);
@@ -329,21 +369,14 @@ async function init(){
     renderPeriodicTable(state.elements);
 
     const iron = state.elements.find((el) => el.symbol === "Fe");
-    if (iron){
+    if (iron) {
       selectElement(iron);
     } else {
       renderOut();
     }
-  } catch (err){
+  } catch (err) {
     console.error(err);
-    byId("selectedName").textContent = "Dataset loading failed";
-    byId("selectedMeta").textContent = "The periodic table dataset could not be loaded.";
-    byId("selectedNote").textContent = String(err.message || err);
-    byId("quickSummary").textContent = "Dataset loading failed.";
-    byId("quickExpanded").textContent =
-      "The app could not load the element presets. Check data/elements.json and try again.";
-    byId("out").innerHTML =
-      `<span class="tag tag-risk">Dataset error</span>`;
+    renderDatasetError(err);
   }
 }
 
