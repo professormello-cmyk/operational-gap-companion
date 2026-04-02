@@ -1,22 +1,32 @@
 {
+  "id": "/operational-gap-companion/",
   "name": "Operational Gap Companion",
-  "short_name": "OGC",
-  "start_url": "./",
-  "scope": "./",
+  "short_name": "Δop",
+  "description": "A lightweight diagnostic companion for operational-gap analysis in inorganic electronic-state assignment.",
+  "lang": "en",
+  "start_url": "/operational-gap-companion/",
+  "scope": "/operational-gap-companion/",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait",
   "background_color": "#0b0f14",
   "theme_color": "#0b0f14",
-  "description": "A lightweight diagnostic companion for operational-gap analysis in inorganic electronic-state assignment.",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
