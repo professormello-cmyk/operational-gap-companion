@@ -91,6 +91,7 @@ function highlightSelectedCell() {
 
 function applyElementPreset(element) {
   if (!element) return;
+
   byId("delta").value = Number(element.delta).toFixed(3);
   byId("V").value = Number(element.V).toFixed(3);
   byId("dop").value = Number(element.dop).toFixed(3);
@@ -169,12 +170,12 @@ function updateInterpretation(element, diagnostics, dop, T) {
   byId("quickExpanded").textContent = payload.expanded;
 }
 
-function makeSpan(className, htmlLabel, valueText) {
+function makeMetricSpan(labelText, valueText) {
   const span = document.createElement("span");
-  span.className = className;
+  span.className = "metric";
 
   const strong = document.createElement("strong");
-  strong.textContent = htmlLabel;
+  strong.textContent = labelText;
 
   span.appendChild(strong);
   span.appendChild(document.createTextNode(` = ${valueText}`));
@@ -201,15 +202,15 @@ function renderOut() {
   const row1 = document.createElement("div");
   row1.className = "metrics-row";
   row1.appendChild(makeTagSpan(crsTagClass(crs), `CRS ${crs} · ${crsText(crs)}`));
-  row1.appendChild(makeSpan("metric", "R", fmt(diagnostics.R)));
-  row1.appendChild(makeSpan("metric", "sin²φ", fmt(diagnostics.sin2phi)));
+  row1.appendChild(makeMetricSpan("R", fmt(diagnostics.R)));
+  row1.appendChild(makeMetricSpan("sin²φ", fmt(diagnostics.sin2phi)));
 
   const row2 = document.createElement("div");
   row2.className = "metrics-row";
-  row2.appendChild(makeSpan("metric", "Δadiab", `${fmt(diagnostics.DeltaAdiab)} eV`));
-  row2.appendChild(makeSpan("metric", "Δmin", `${fmt(diagnostics.DeltaMin)} eV`));
-  row2.appendChild(makeSpan("metric", "Δop", `${fmt(dop)} eV`));
-  row2.appendChild(makeSpan("metric", "kBT", `${fmt(kBT)} eV`));
+  row2.appendChild(makeMetricSpan("Δadiab", `${fmt(diagnostics.DeltaAdiab)} eV`));
+  row2.appendChild(makeMetricSpan("Δmin", `${fmt(diagnostics.DeltaMin)} eV`));
+  row2.appendChild(makeMetricSpan("Δop", `${fmt(dop)} eV`));
+  row2.appendChild(makeMetricSpan("kBT", `${fmt(kBT)} eV`));
 
   out.appendChild(row1);
   out.appendChild(row2);
@@ -233,6 +234,7 @@ function resetToSelectedElementPreset() {
       "A full inorganic interpretation requires a selected preset element.";
     return;
   }
+
   applyElementPreset(state.selectedElement);
   renderOut();
 }
@@ -242,12 +244,12 @@ function makeElementCell(element) {
   button.type = "button";
   button.className = "element-cell";
   button.dataset.symbol = element.symbol;
+  button.dataset.col = String(element.col);
+  button.dataset.row = String(element.row);
+  button.setAttribute("aria-label", `${element.name}, atomic number ${element.Z}`);
+
   button.style.gridColumn = String(element.col);
   button.style.gridRow = String(element.row);
-  button.setAttribute(
-    "aria-label",
-    `${element.name}, atomic number ${element.Z}`
-  );
 
   const num = document.createElement("div");
   num.className = "element-number";
@@ -269,10 +271,13 @@ function makeElementCell(element) {
 
 function makeBridgeCell(row, col, rangeText, labelText) {
   const div = document.createElement("div");
-  div.className = "element-cell";
+  div.className = "element-cell bridge-cell";
+  div.dataset.col = String(col);
+  div.dataset.row = String(row);
+  div.setAttribute("aria-label", `${rangeText} ${labelText}`);
+
   div.style.gridColumn = String(col);
   div.style.gridRow = String(row);
-  div.setAttribute("aria-label", `${rangeText} ${labelText}`);
 
   const num = document.createElement("div");
   num.className = "element-number";
@@ -289,9 +294,6 @@ function makeBridgeCell(row, col, rangeText, labelText) {
   div.appendChild(num);
   div.appendChild(sym);
   div.appendChild(cat);
-
-  div.style.cursor = "default";
-  div.style.opacity = "0.92";
 
   return div;
 }
