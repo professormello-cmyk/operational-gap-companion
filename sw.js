@@ -1,5 +1,4 @@
-const CACHE = "ogc-v2";
-
+const CACHE_NAME = "ogc-v3";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -14,7 +13,7 @@ const APP_SHELL = [
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
-      .open(CACHE)
+      .open(CACHE_NAME)
       .then((cache) => cache.addAll(APP_SHELL))
       .then(() => self.skipWaiting())
   );
@@ -27,7 +26,7 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys.map((key) => {
-            if (key !== CACHE) {
+            if (key !== CACHE_NAME) {
               return caches.delete(key);
             }
             return Promise.resolve();
@@ -39,40 +38,54 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  const req = event.request;
+  const request = event.request;
 
-  if (req.method !== "GET") return;
+  if (request.method !== "GET") return;
 
-  const url = new URL(req.url);
+  const url = new URL(request.url);
 
   if (url.origin !== self.location.origin) return;
 
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(req)
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
         .then((response) => {
-          if (!response || response.status !== 200) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put("./index.html", responseClone);
+          });
+          return response;
+        })
+        .catch(() => caches.match("./index.html"))
+    );
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return fetch(request)
+        .then((response) => {
+          if (!response || response.status !== 200 || response.type !== "basic") {
             return response;
           }
 
           const responseClone = response.clone();
 
-          caches.open(CACHE).then((cache) => {
-            cache.put(req, responseClone);
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone);
           });
 
           return response;
         })
         .catch(() => {
-          if (
-            req.mode === "navigate" ||
-            req.destination === "document"
-          ) {
+          if (request.destination === "document") {
             return caches.match("./index.html");
           }
-          return caches.match("./");
+          return Response.error();
         });
     })
   );
